@@ -1,15 +1,15 @@
-const express = require("express")
+const express = require('express')
 const router = express.Router()
-const passport = require("passport")
-const GoogleStrategy = require("passport-google-oauth20").Strategy
-const GoogleAuth = require("../config/auth.json")
+const passport = require('passport')
+const GoogleStrategy = require('passport-google-oauth20').Strategy
+const GoogleAuth = require('../config/auth.json')
 
 passport.use(
   new GoogleStrategy(
     {
       clientID: GoogleAuth.ID,
       clientSecret: GoogleAuth.PASSWORD,
-      callbackURL: "/auth/callback"
+      callbackURL: '/auth/callback'
     },
     function (accessToken, refreshToken, profile, cb) {
       console.log(profile)
@@ -43,15 +43,11 @@ passport.use(
 //   )
 // )
 
-router.get("/auth", function (req, res, next) {
-  passport.authenticate("google", { scope: ["profile", "email"] })
-})
-
 router.get(
-  "/auth/callback",
-  passport.authenticate("google", {
-    successRedirect: "/",
-    failureRedirect: "/login"
+  '/auth/callback',
+  passport.authenticate('google', {
+    successRedirect: '/',
+    failureRedirect: '/login'
   })
 )
 

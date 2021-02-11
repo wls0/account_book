@@ -1,36 +1,34 @@
-"use strict"
+'use strict'
 module.exports = {
   up: (queryInterface, Sequelize) => {
-    return queryInterface.createTable("account_lists", {
+    return queryInterface.createTable('accountLists', {
       id: {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
         type: Sequelize.INTEGER
       },
-      user_email: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      account: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      category: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
-      cost: {
+      userIndex: {
         type: Sequelize.INTEGER,
         allowNull: false
       },
-      time: {
-        type: Sequelize.DATE,
-        allowNull: false
+      bigCategory: {
+        type: Sequelize.STRING
+      },
+      smallCategory: {
+        type: Sequelize.STRING
+      },
+      card: {
+        type: Sequelize.STRING
+      },
+      cost: {
+        type: Sequelize.INTEGER
+      },
+      date: {
+        type: Sequelize.STRING
       },
       memo: {
-        type: Sequelize.STRING,
-        allowNull: false
+        type: Sequelize.STRING
       },
       createdAt: {
         allowNull: false,
@@ -43,6 +41,6 @@ module.exports = {
     })
   },
   down: (queryInterface, Sequelize) => {
-    return queryInterface.dropTable("account_lists")
+    return queryInterface.dropTable('accountLists')
   }
 }
