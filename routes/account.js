@@ -4,7 +4,7 @@ const models = require('../models')
 
 // const User = models.accountUser
 // const Account = require('../models/accountlist')
-const Account = models.accountList
+const Account = models.account_lists
 const jwt = require('jsonwebtoken')
 const secret = require('../config/pwd.json')
 const sequelize = require('sequelize')
@@ -130,6 +130,7 @@ router.post('/', async (req, res, next) => {
   const card = req.body.card
   const cost = Number(req.body.cost)
   const date = req.body.date
+  const revenue = req.body.revenue
   const memo = req.body.memo
   await Account.create({
     userIndex: tokenResult.id,
@@ -138,6 +139,7 @@ router.post('/', async (req, res, next) => {
     card,
     cost,
     date,
+    revenue,
     memo
   })
   res.json('done')
@@ -184,30 +186,142 @@ router.delete('/:id', async (req, res, next) => {
   }
 })
 
-// // 일별 가계부 확인
-// router.get('/day/:year/:month/:day', async (req, res, next) => {
-//   // const token = req.headers.authorization
-//   const token = req.cookies.user.access_token
-//   const tokenResult = jwt.verify(token, secret.jwtPwd)
-//   const year = req.params.year
-//   const month = req.params.month
-//   const day = req.params.day
-//   const date = year + '-' + month + '-' + day
-//   const data = await Account.findAll({
-//     where:
-//     {
-//       userIndex: tokenResult.id, date
-//     }
-//   })
-//   res.json(data)
-// })
+// 일별 가계부 확인
+router.get('/day/:day', async (req, res, next) => {
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
+  const tokenResult = jwt.verify(token, secret.jwtPwd)
+  const date = req.params.day
+
+  const totalCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      date
+    }
+  })
+  const cashCost = await Account.sum('cost', {
+
+    where: {
+      userIndex: tokenResult.id,
+      card: 'cash',
+      date
+    }
+  })
+  const shinhanCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'shinhan',
+      date
+    }
+  })
+  const samsungCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'samsung',
+      date
+    }
+  })
+  const hyundaiCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'hyundai',
+      date
+    }
+  })
+  const wooriCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'woori',
+      date
+    }
+  })
+  const lotteCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'lotte',
+      date
+    }
+  })
+  const kbCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'kb',
+      date
+    }
+  })
+  const revenueCost = await Account.sum('revenue', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'revenue',
+      date
+    }
+  })
+  let revenue
+  let total
+  let kb
+  let lotte
+  let woori
+  let shinhan
+  let hyundai
+  let samsung
+  let cash
+
+  isNaN(totalCost) === true ? total = 0 : total = totalCost
+  isNaN(kbCost) === true ? kb = 0 : kb = kbCost
+  isNaN(lotteCost) === true ? lotte = 0 : lotte = lotteCost
+  isNaN(wooriCost) === true ? woori = 0 : woori = wooriCost
+  isNaN(shinhanCost) === true ? shinhan = 0 : shinhan = shinhanCost
+  isNaN(hyundaiCost) === true ? hyundai = 0 : hyundai = hyundaiCost
+  isNaN(samsungCost) === true ? samsung = 0 : samsung = samsungCost
+  isNaN(cashCost) === true ? cash = 0 : cash = cashCost
+  isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
+
+  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+})
 
 // 월별 총 가계부 확인
 router.get('/month/:date', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date
+  console.log(date)
+  const data = await Account.findAll({
+    where:
+    {
+      userIndex: tokenResult.id,
+      [Op.or]: [
+        {
+          date: {
+            [Op.like]: date + '%'
+          }
+        }
+      ]
+    }
+  })
+  const box = []
+  // let date
+  // try {
+
+  for (const o in data) {
+    box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: data[o].dataValues.revenue })
+  }
+  const costList = []
+  box.reduce(function (res, value) {
+    if (!res[value.date]) {
+      res[value.date] = { date: value.date, cost: 0, revenue: 0, open: false }
+      costList.push(res[value.date])
+    }
+    res[value.date].cost += value.cost
+    res[value.date].revenue += value.revenue
+    return res
+  }, {})
+
+  console.log(costList)
+  // } catch (error) {
+  //   console.log(error)
+  // }
   const totalCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
@@ -312,6 +426,20 @@ router.get('/month/:date', async (req, res, next) => {
       ]
     }
   })
+  const revenueCost = await Account.sum('revenue', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'revenue',
+      [Op.or]: [
+        {
+          date: {
+            [Op.like]: date + '%'
+          }
+        }
+      ]
+    }
+  })
+  let revenue
   let total
   let kb
   let lotte
@@ -329,16 +457,49 @@ router.get('/month/:date', async (req, res, next) => {
   isNaN(hyundaiCost) === true ? hyundai = 0 : hyundai = hyundaiCost
   isNaN(samsungCost) === true ? samsung = 0 : samsung = samsungCost
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
+  isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash })
+  res.json({ costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
 })
 
 // 년별 가계부 확인
 router.get('/year/:year', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.year
+
+  const data = await Account.findAll({
+    where:
+    {
+      userIndex: tokenResult.id,
+      [Op.or]: [
+        {
+          date: {
+            [Op.like]: date + '%'
+          }
+        }
+      ]
+    }
+  })
+  const box = []
+  // let date
+  // try {
+
+  for (const o in data) {
+    box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: data[o].dataValues.revenue })
+  }
+  const costList = []
+  box.reduce(function (res, value) {
+    if (!res[value.date]) {
+      res[value.date] = { date: value.date, cost: 0, revenue: 0, open: false }
+      costList.push(res[value.date])
+    }
+    res[value.date].cost += value.cost
+    res[value.date].revenue += value.revenue
+    return res
+  }, {})
+
   const totalCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
@@ -443,6 +604,21 @@ router.get('/year/:year', async (req, res, next) => {
       ]
     }
   })
+  const revenueCost = await Account.sum('revenue', {
+    where: {
+      userIndex: tokenResult.id,
+      card: 'revenue',
+      [Op.or]: [
+        {
+          date: {
+            [Op.like]: date + '%'
+          }
+        }
+      ]
+    }
+  })
+
+  let revenue
   let total
   let kb
   let lotte
@@ -460,8 +636,9 @@ router.get('/year/:year', async (req, res, next) => {
   isNaN(hyundaiCost) === true ? hyundai = 0 : hyundai = hyundaiCost
   isNaN(samsungCost) === true ? samsung = 0 : samsung = samsungCost
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
+  isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash })
+  res.json({ costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
 })
 
 module.exports = router

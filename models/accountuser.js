@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const accountUser = sequelize.define('accountUser', {
+  const accountUser = sequelize.define('account_users', {
     userId: {
       type: DataTypes.STRING,
       allowNull: false
@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     }
   }, {})
   accountUser.associate = function (models) {
-    models.accountUser.hasMany(models.accountList, {
+    models.account_users.hasMany(models.account_lists, {
       foreignKey: 'userIndex'
     })
   }

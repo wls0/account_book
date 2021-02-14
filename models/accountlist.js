@@ -1,6 +1,6 @@
 'use strict'
 module.exports = (sequelize, DataTypes) => {
-  const accountList = sequelize.define('accountList', {
+  const accountList = sequelize.define('account_lists', {
     userIndex: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -17,6 +17,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     },
     cost: {
+      type: DataTypes.INTEGER,
+      allowNull: false
+    },
+    revenue: {
       type: DataTypes.INTEGER,
       allowNull: false
     },

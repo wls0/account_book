@@ -12,7 +12,7 @@ passport.use(new LocalStrategy({
   passwordField: 'password'
 },
 async (id, password, done) => {
-  const data = await models.accountUser.findOne({ where: { userId: id } })
+  const data = await models.account_users.findOne({ where: { userId: id } })
   if (data) {
     const pwd = crypto.createHash('sha512').update(password + data.salt).digest('hex')
     pwd === data.password ? done(null, data) : done(null, false)
@@ -26,11 +26,11 @@ router.post('/signup', async (req, res, next) => {
   const body = req.body
   const salt = Math.round(new Date().valueOf() + Math.random()) + ''
   const password = crypto.createHash('sha512').update(body.password + salt).digest('hex')
-  const find = await models.accountUser.findOne({ where: { userId: body.id } })
+  const find = await models.account_users.findOne({ where: { userId: body.id } })
   if (find) {
     console.log('아이디 존재')
   } else if (body.id !== '' || body.password !== '') {
-    await models.accountUser.create({
+    await models.account_users.create({
       userId: body.id,
       password,
       salt: salt
@@ -56,12 +56,14 @@ router.post('/login',
     })
     const token = { access_token: accessToken }
     res.cookie('user', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 })
+    res.status(200)
     res.json(token)
   })
 
 // 로그인시 아이디,비밀번호가 틀렸을때
 router.get('/fail', (req, res, next) => {
-  res.json('틀림')
+  res.status(401)
+  res.json('해당 계정이 없습니다.')
   console.log('아이디 비밀번호 틀림')
 })
 
