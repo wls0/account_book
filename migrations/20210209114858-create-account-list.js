@@ -24,13 +24,7 @@ module.exports = {
       cost: {
         type: Sequelize.INTEGER
       },
-      revenue: {
-        type: Sequelize.INTEGER
-      },
       date: {
-        type: Sequelize.STRING
-      },
-      memo: {
         type: Sequelize.STRING
       },
       createdAt: {

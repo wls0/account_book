@@ -122,48 +122,44 @@ router.get('/card/:card/:date', async (req, res, next) => {
 
 // 가계부 작성
 router.post('/', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const bigCategory = req.body.bigCategory
   const smallCategory = req.body.smallCategory
   const card = req.body.card
   const cost = Number(req.body.cost)
   const date = req.body.date
-  const revenue = req.body.revenue
-  const memo = req.body.memo
+
+  console.log(date, 'asdasdasasdasdasdsdgdfgdsf!!!!!!!!!!!!!!!!!!!!')
   await Account.create({
     userIndex: tokenResult.id,
     bigCategory,
     smallCategory,
     card,
     cost,
-    date,
-    revenue,
-    memo
+    date
   })
   res.json('done')
 })
 
 // 가계부 수정
 router.put('/', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const bigCategory = req.body.bigCategory
   const smallCategory = req.body.smallCategory
   const card = req.body.card
   const cost = Number(req.body.cost)
   const date = req.body.date
-  const memo = req.body.memo
   const id = req.body.id
   await Account.update({
     bigCategory,
     smallCategory,
     card,
     cost,
-    date,
-    memo
+    date
   }, {
     where: { userIndex: tokenResult.id, id }
   })
@@ -172,8 +168,8 @@ router.put('/', async (req, res, next) => {
 
 // 가계부 삭제
 router.delete('/:id', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const id = req.params.id
   const data = await Account.destroy({
@@ -193,12 +189,58 @@ router.get('/day/:day', async (req, res, next) => {
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.day
 
-  const totalCost = await Account.sum('cost', {
+  const listData = await Account.findAll({
+    attributes: [
+      'id',
+      'bigCategory',
+      'smallCategory',
+      'card',
+      'cost',
+      'date'
+    ],
     where: {
       userIndex: tokenResult.id,
       date
     }
   })
+  const list = []
+  let card
+  for (const a in listData) {
+    if (listData[a].card === 'cash') {
+      card = '현금'
+    } else if (listData[a].card === 'shinhan') {
+      card = '신한'
+    } else if (listData[a].card === 'samsung') {
+      card = '삼성'
+    } else if (listData[a].card === 'hyundai') {
+      card = '현대'
+    } else if (listData[a].card === 'woori') {
+      card = '우리'
+    } else if (listData[a].card === 'lotte') {
+      card = '롯데'
+    } else if (listData[a].card === 'kb') {
+      card = 'KB'
+    } else if (listData[a].card === 'revenue') {
+      card = '수익'
+    }
+    listData[a].card = card
+    list.push(listData[a])
+  }
+
+  const totalCost = await Account.sum('cost', {
+    where: {
+      userIndex: tokenResult.id,
+      date,
+      [Op.or]: [
+        {
+          card: {
+            [Op.notRegexp]: 'revenue'
+          }
+        }
+      ]
+    }
+  })
+
   const cashCost = await Account.sum('cost', {
 
     where: {
@@ -249,7 +291,7 @@ router.get('/day/:day', async (req, res, next) => {
       date
     }
   })
-  const revenueCost = await Account.sum('revenue', {
+  const revenueCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
       card: 'revenue',
@@ -276,7 +318,7 @@ router.get('/day/:day', async (req, res, next) => {
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
   isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  res.json({ list, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
 })
 
 // 월별 총 가계부 확인
@@ -301,11 +343,12 @@ router.get('/month/:date', async (req, res, next) => {
     }
   })
   const box = []
-  // let date
-  // try {
-
   for (const o in data) {
-    box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: data[o].dataValues.revenue })
+    if (data[o].dataValues.card === 'revenue') {
+      box.push({ date: data[o].dataValues.date, cost: 0, revenue: data[o].dataValues.cost })
+    } else {
+      box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: 0 })
+    }
   }
   const costList = []
   box.reduce(function (res, value) {
@@ -317,11 +360,6 @@ router.get('/month/:date', async (req, res, next) => {
     res[value.date].revenue += value.revenue
     return res
   }, {})
-
-  console.log(costList)
-  // } catch (error) {
-  //   console.log(error)
-  // }
   const totalCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
@@ -329,6 +367,9 @@ router.get('/month/:date', async (req, res, next) => {
         {
           date: {
             [Op.like]: date + '%'
+          },
+          card: {
+            [Op.notRegexp]: 'revenue'
           }
         }
       ]
@@ -426,7 +467,7 @@ router.get('/month/:date', async (req, res, next) => {
       ]
     }
   })
-  const revenueCost = await Account.sum('revenue', {
+  const revenueCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
       card: 'revenue',
@@ -487,7 +528,11 @@ router.get('/year/:year', async (req, res, next) => {
   // try {
 
   for (const o in data) {
-    box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: data[o].dataValues.revenue })
+    if (data[o].dataValues.card === 'revenue') {
+      box.push({ date: data[o].dataValues.date, cost: 0, revenue: data[o].dataValues.cost })
+    } else {
+      box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: 0 })
+    }
   }
   const costList = []
   box.reduce(function (res, value) {
@@ -507,6 +552,9 @@ router.get('/year/:year', async (req, res, next) => {
         {
           date: {
             [Op.like]: date + '%'
+          },
+          card: {
+            [Op.notRegexp]: 'revenue'
           }
         }
       ]
@@ -604,7 +652,7 @@ router.get('/year/:year', async (req, res, next) => {
       ]
     }
   })
-  const revenueCost = await Account.sum('revenue', {
+  const revenueCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,
       card: 'revenue',

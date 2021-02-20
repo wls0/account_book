@@ -20,18 +20,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    revenue: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
     date: {
       type: DataTypes.STRING,
       allowNull: false
-    },
-    memo: {
-      type: DataTypes.STRING
     }
-
   }, {})
   accountList.associate = function (models) {
     // associations can be defined here
