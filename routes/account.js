@@ -10,10 +10,11 @@ const secret = require('../config/pwd.json')
 const sequelize = require('sequelize')
 const Op = sequelize.Op
 
-// 당일 가계부 확인
+// 당일 가계부 확인 // 삭제
 router.get('/:date', async (req, res, next) => {
   // const token = req.headers.authorization
   const token = req.cookies.user.access_token
+
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date
   const totalCost = await Account.sum('cost', {
@@ -78,7 +79,16 @@ router.get('/:date', async (req, res, next) => {
       date
     }
   })
-  console.log(isNaN(kbCost))
+
+  const revenueCost = await Account.sum('cost', {
+    where:{
+      userIndex: tokenResult.id,
+      card: 'revenue',
+      date
+    }
+  })
+
+
   // total, kb, lotte, woori,
   let total
   let kb
@@ -88,6 +98,7 @@ router.get('/:date', async (req, res, next) => {
   let hyundai
   let samsung
   let cash
+  let revenue
 
   isNaN(totalCost) === true ? total = 0 : total = totalCost
   isNaN(kbCost) === true ? kb = 0 : kb = kbCost
@@ -97,8 +108,9 @@ router.get('/:date', async (req, res, next) => {
   isNaN(hyundaiCost) === true ? hyundai = 0 : hyundai = hyundaiCost
   isNaN(samsungCost) === true ? samsung = 0 : samsung = samsungCost
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
+  isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash })
+  res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
 })
 
 // 당일 카드 가계부 확인
@@ -131,7 +143,6 @@ router.post('/', async (req, res, next) => {
   const cost = Number(req.body.cost)
   const date = req.body.date
 
-  console.log(date, 'asdasdasasdasdasdsdgdfgdsf!!!!!!!!!!!!!!!!!!!!')
   await Account.create({
     userIndex: tokenResult.id,
     bigCategory,
@@ -188,7 +199,6 @@ router.get('/day/:day', async (req, res, next) => {
   // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.day
-
   const listData = await Account.findAll({
     attributes: [
       'id',
@@ -308,6 +318,7 @@ router.get('/day/:day', async (req, res, next) => {
   let samsung
   let cash
 
+  //값이 없다면 NaN발생
   isNaN(totalCost) === true ? total = 0 : total = totalCost
   isNaN(kbCost) === true ? kb = 0 : kb = kbCost
   isNaN(lotteCost) === true ? lotte = 0 : lotte = lotteCost
@@ -350,8 +361,9 @@ router.get('/month/:date', async (req, res, next) => {
       box.push({ date: data[o].dataValues.date, cost: data[o].dataValues.cost, revenue: 0 })
     }
   }
+  
   const costList = []
-  box.reduce(function (res, value) {
+  box.reduce( (res, value) =>  {
     if (!res[value.date]) {
       res[value.date] = { date: value.date, cost: 0, revenue: 0, open: false }
       costList.push(res[value.date])
@@ -360,6 +372,7 @@ router.get('/month/:date', async (req, res, next) => {
     res[value.date].revenue += value.revenue
     return res
   }, {})
+
   const totalCost = await Account.sum('cost', {
     where: {
       userIndex: tokenResult.id,

@@ -14,10 +14,8 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }
   }, {})
-  accountUser.associate = function (models) {
-    models.account_users.hasMany(models.account_lists, {
-      foreignKey: 'userIndex'
-    })
+  accountUser.associate =  (models) => {
+    accountUser.hasMany(models.account_lists)
   }
   return accountUser
 }

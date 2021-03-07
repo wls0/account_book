@@ -25,8 +25,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false
     }
   }, {})
-  accountList.associate = function (models) {
-    // associations can be defined here
+  accountList.associate =  (models) => {
+    accountList.belongsTo(models.account_lists, {
+      foreignKey: "userIndex"
+    })
   }
   return accountList
 }

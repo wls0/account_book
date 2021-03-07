@@ -28,16 +28,16 @@ router.post('/signup', async (req, res, next) => {
   const password = crypto.createHash('sha512').update(body.password + salt).digest('hex')
   const find = await models.account_users.findOne({ where: { userId: body.id } })
   if (find) {
-    console.log('아이디 존재')
+    res.status(409).json({data:'fail'})
   } else if (body.id !== '' || body.password !== '') {
     await models.account_users.create({
       userId: body.id,
       password,
       salt: salt
     })
-    res.json('done')
+    res.status(409).json({data:'ok'})
   } else {
-    console.log('값이 비어있음')
+    res.status(412).json({data:'fail'})
   }
 })
 
@@ -56,15 +56,12 @@ router.post('/login',
     })
     const token = { access_token: accessToken }
     res.cookie('user', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 })
-    res.status(200)
-    res.json(token)
+    res.status(200).json({data:'ok',token})
   })
 
 // 로그인시 아이디,비밀번호가 틀렸을때
 router.get('/fail', (req, res, next) => {
-  res.status(401)
-  res.json('해당 계정이 없습니다.')
-  console.log('아이디 비밀번호 틀림')
+  res.status(401).json({data:'fail'})
 })
 
 module.exports = router
