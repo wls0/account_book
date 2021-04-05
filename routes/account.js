@@ -115,8 +115,8 @@ router.get('/:date', async (req, res, next) => {
 
 // 당일 카드 가계부 확인
 router.get('/card/:card/:date', async (req, res, next) => {
-  // const token = req.headers.authorization
-  const token = req.cookies.user.access_token
+  const token = req.headers.authorization
+  // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date
   const card = req.params.card
@@ -335,7 +335,6 @@ router.get('/day/:day', async (req, res, next) => {
 // 월별 총 가계부 확인
 router.get('/month/:date', async (req, res, next) => {
   const token = req.headers.authorization
-
   // const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date

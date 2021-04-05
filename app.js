@@ -8,6 +8,9 @@ const userRouter = require('./routes/user')
 const cors = require('cors')
 const accountRouter = require('./routes/account')
 const models = require('./models/index.js').sequelize
+const jwt = require('jsonwebtoken')
+const secret = require('./config/pwd.json')
+
 
 models.sync().then(() => {
   console.log(' DB 연결 성공')
@@ -37,6 +40,17 @@ app.use(compression())
 
 app.use('/user', userRouter)
 app.use('/account', accountRouter)
+
+app.use('/account', (req, res, next) => {
+  try {
+    jwt.verify(req.headers.authorization, secret.jwtSecret)
+    app.use('/account', accountRouter)
+  } catch (error) {
+    res.status(401).json({data:'fail'})
+  }
+  next()
+})
+
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

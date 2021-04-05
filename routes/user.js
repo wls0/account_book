@@ -21,7 +21,20 @@ async (id, password, done) => {
   }
 }
 ))
-
+let check = false
+//중복아이디 확인
+router.get('/:id', async (req, res, next) => {
+  const id = req.params.id
+  console.log(id)
+  const find = await models.account_users.findOne({where:{userId:id}})
+  if(!find){
+    check = true
+    json({data:'ok'})
+  }else{
+    res.status(403).json({data:'fail'})
+  }
+})
+//회원가입
 router.post('/signup', async (req, res, next) => {
   const body = req.body
   const salt = Math.round(new Date().valueOf() + Math.random()) + ''
@@ -30,12 +43,16 @@ router.post('/signup', async (req, res, next) => {
   if (find) {
     res.status(409).json({data:'fail'})
   } else if (body.id !== '' || body.password !== '') {
-    await models.account_users.create({
-      userId: body.id,
-      password,
-      salt: salt
-    })
-    res.status(409).json({data:'ok'})
+    if(check === true){
+      await models.account_users.create({
+        userId: body.id,
+        password,
+        salt: salt
+      })
+      res.status(200).json({data:'ok'})
+    }else{
+      res.status(403).json({data:'fail'})
+    }
   } else {
     res.status(412).json({data:'fail'})
   }
