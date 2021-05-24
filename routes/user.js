@@ -1,18 +1,20 @@
 const express = require('express')
 const router = express.Router()
 const models = require('../models')
+const User = models.account_users
 const crypto = require('crypto')
 const passport = require('passport')
 const LocalStrategy = require('passport-local').Strategy
 const jwt = require('jsonwebtoken')
 const secret = require('../config/pwd.json')
+const err = require('../lib/error').errorCode
 
 passport.use(new LocalStrategy({
   usernameField: 'id',
   passwordField: 'password'
 },
 async (id, password, done) => {
-  const data = await models.account_users.findOne({ where: { userId: id } })
+  const data = await User.findOne({ where: { userId: id } })
   if (data) {
     const pwd = crypto.createHash('sha512').update(password + data.salt).digest('hex')
     pwd === data.password ? done(null, data) : done(null, false)
@@ -22,46 +24,52 @@ async (id, password, done) => {
 }
 ))
 let check = false
+
 //중복아이디 확인
-router.get('/:id', async (req, res, next) => {
+router.get('/signup/:id', async (req, res, next) => {
   const id = req.params.id
-  console.log(id)
-  const find = await models.account_users.findOne({where:{userId:id}})
-  if(!find){
-    check = true
-    json({data:'ok'})
+  const find = await User.findOne({where:{userId:id}})
+  if(!id){
+    err(res, 403, '값을 입력해주세요.')
   }else{
-    res.status(403).json({data:'fail'})
+    if(!find){
+      check = true
+      err(res, 200)
+    }else{
+      err(res, 409, '중복아이디가 존재합니다.')
+    }
   }
 })
+
 //회원가입
 router.post('/signup', async (req, res, next) => {
   const body = req.body
   const salt = Math.round(new Date().valueOf() + Math.random()) + ''
   const password = crypto.createHash('sha512').update(body.password + salt).digest('hex')
-  const find = await models.account_users.findOne({ where: { userId: body.id } })
+  const find = await User.findOne({ where: { userId: body.id } })
   if (find) {
-    res.status(409).json({data:'fail'})
+    err(res, 409, '중복아이디가 존재합니다.')
   } else if (body.id !== '' || body.password !== '') {
     if(check === true){
-      await models.account_users.create({
+      await User.create({
         userId: body.id,
         password,
         salt: salt
       })
-      res.status(200).json({data:'ok'})
+      err(res, 200)
     }else{
-      res.status(403).json({data:'fail'})
+      err(res, 401, '아이디 중복확인을 해주세요.')
     }
-  } else {
-    res.status(412).json({data:'fail'})
+  }else{
+    err(res, 403, '값을 입력해주세요.')
   }
 })
 
 // 로그인 시 토큰 발행
 router.post('/login',
   passport.authenticate('local', { failureRedirect: '/user/fail', session: false }),
-  async (req, res, err) => {
+  async (req, res, error) => {
+    
     const user = req.user
     const accessToken = jwt.sign({
       id: user.id
@@ -73,12 +81,12 @@ router.post('/login',
     })
     const token = { access_token: accessToken }
     res.cookie('user', token, { httpOnly: true, maxAge: 30 * 24 * 60 * 60 * 1000 })
-    res.status(200).json({data:'ok',token})
+    err(res, 200, '', token)
   })
 
 // 로그인시 아이디,비밀번호가 틀렸을때
 router.get('/fail', (req, res, next) => {
-  res.status(401).json({data:'fail'})
+  err(res, 401, '아이디혹은 비밀번호가 틀렸습니다.')
 })
 
 module.exports = router

@@ -9,6 +9,7 @@ const jwt = require('jsonwebtoken')
 const secret = require('../config/pwd.json')
 const sequelize = require('sequelize')
 const Op = sequelize.Op
+const err = require('../lib/error').errorCode
 
 // 당일 가계부 확인 // 삭제
 router.get('/:date', async (req, res, next) => {
@@ -113,10 +114,12 @@ router.get('/:date', async (req, res, next) => {
   res.json({ total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
 })
 
+
 // 당일 카드 가계부 확인
 router.get('/card/:card/:date', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+      // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date
   const card = req.params.card
@@ -127,15 +130,18 @@ router.get('/card/:card/:date', async (req, res, next) => {
       date
     }
   })
-  console.log(total)
+  err(res, 200, '', total)
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
 
-  res.json(total)
 })
 
 // 가계부 작성
 router.post('/', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+      // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const bigCategory = req.body.bigCategory
   const smallCategory = req.body.smallCategory
@@ -151,13 +157,18 @@ router.post('/', async (req, res, next) => {
     cost,
     date
   })
-  res.json('done')
+  err(res, 200)
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+  
 })
 
 // 가계부 수정
 router.put('/', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+      // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const bigCategory = req.body.bigCategory
   const smallCategory = req.body.smallCategory
@@ -174,29 +185,39 @@ router.put('/', async (req, res, next) => {
   }, {
     where: { userIndex: tokenResult.id, id }
   })
-  res.json('done')
+  err(res, 200)
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+
 })
 
 // 가계부 삭제
 router.delete('/:id', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+      // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const id = req.params.id
   const data = await Account.destroy({
     where: { userIndex: tokenResult.id, id }
   })
   if (data) {
-    res.json('done')
+    err(res, 200)
   } else {
-    console.log('데이터가 없습니다.')
+    err(res, 404, '데이터가 없습니다.')
   }
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+
 })
 
 // 일별 가계부 확인
 router.get('/day/:day', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+    // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.day
   const listData = await Account.findAll({
@@ -329,13 +350,18 @@ router.get('/day/:day', async (req, res, next) => {
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
   isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ list, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  err(res, 200, '', { list, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+  
 })
 
 // 월별 총 가계부 확인
 router.get('/month/:date', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+     // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.date
   console.log(date)
@@ -512,13 +538,19 @@ router.get('/month/:date', async (req, res, next) => {
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
   isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  err(res, 200, '', { costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+ 
 })
 
 // 년별 가계부 확인
 router.get('/year/:year', async (req, res, next) => {
-  const token = req.headers.authorization
-  // const token = req.cookies.user.access_token
+  try{
+      // const token = req.headers.authorization
+  const token = req.cookies.user.access_token
+
   const tokenResult = jwt.verify(token, secret.jwtPwd)
   const date = req.params.year
 
@@ -698,7 +730,11 @@ router.get('/year/:year', async (req, res, next) => {
   isNaN(cashCost) === true ? cash = 0 : cash = cashCost
   isNaN(revenueCost) === true ? revenue = 0 : revenue = revenueCost
 
-  res.json({ costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  err(res, 200, '', { costList, total, kb, lotte, woori, shinhan, hyundai, samsung, cash, revenue })
+  }catch(error){
+    err(res, 401, '다시 로그인 해주세요.')
+  }
+
 })
 
 module.exports = router

@@ -10,7 +10,7 @@ const accountRouter = require('./routes/account')
 const models = require('./models/index.js').sequelize
 const jwt = require('jsonwebtoken')
 const secret = require('./config/pwd.json')
-
+const err = require('./lib/error').errorCode
 
 models.sync().then(() => {
   console.log(' DB 연결 성공')
@@ -39,33 +39,36 @@ app.use(express.static(path.join(__dirname, 'public')))
 app.use(compression())
 
 app.use('/user', userRouter)
-app.use('/account', accountRouter)
+// app.use('/account', accountRouter)
 
 app.use('/account', (req, res, next) => {
   try {
-    jwt.verify(req.headers.authorization, secret.jwtSecret)
-    app.use('/account', accountRouter)
+    // req.headers.authorization
+    req.cookies.user.access_token ? app.use('/account', accountRouter) : err(res, 401,'로그인 후 이동해주세요.')
+    // jwt.verify(req.cookies.user.access_token, secret.jwtSecret)  
+    // jwt.verify(req.headers.authorization, secret.jwtSecret)
+
   } catch (error) {
-    res.status(401).json({data:'fail'})
+    err(res, 401,'로그인 후 이용해주세요.')
   }
   next()
 })
 
 
-// catch 404 and forward to error handler
-app.use(function (req, res, next) {
-  next(createError(404))
-})
+//catch 404 and forward to error handler
+// app.use(function (req, res, next) {
+//   next(createError(404))
+// })
 
-// error handler
-app.use(function (err, req, res, next) {
-  // set locals, only providing error in development
-  res.locals.message = err.message
-  res.locals.error = req.app.get('env') === 'development' ? err : {}
+// // error handler
+// app.use(function (err, req, res, next) {
+//   // set locals, only providing error in development
+//   res.locals.message = err.message
+//   res.locals.error = req.app.get('env') === 'development' ? err : {}
 
-  // render the error page
-  res.status(err.status || 500)
-  res.render('error')
-})
+//   // render the error page
+//   res.status(err.status || 500)
+//   // res.render('error')
+// })
 
 module.exports = app
