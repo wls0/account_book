@@ -11,15 +11,17 @@ const userRouter = require("./routes/user");
 const accountRouter = require("./routes/account");
 const models = require("./models/index.js").sequelize;
 
-models
-  .sync()
-  .then(() => {
-    console.log(" DB 연결 성공");
-  })
-  .catch((err) => {
-    console.log("연결 실패");
-    console.log(err);
-  });
+if (process.env.NODE_ENV === "local") {
+  models
+    .sync()
+    .then(() => {
+      console.log(" DB 연결 성공");
+    })
+    .catch((err) => {
+      console.log("연결 실패");
+      console.log(err);
+    });
+}
 
 const app = express();
 
