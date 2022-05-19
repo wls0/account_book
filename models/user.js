@@ -1,29 +1,22 @@
 const { sequelize, DataTypes } = require('./index')
-const { Users } = require('./user')
+const { Accounts } = require('./accountlist')
 
-const Accounts = sequelize.define(
-  'account',
+const Users = sequelize.define(
+  'users',
   {
-    userIndex: {
+    id: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    bigCategory: {
+    userId: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    smallCategory: {
-      type: DataTypes.STRING
-    },
-    card: {
+    password: {
       type: DataTypes.STRING,
       allowNull: false
     },
-    cost: {
-      type: DataTypes.INTEGER,
-      allowNull: false
-    },
-    date: {
+    salt: {
       type: DataTypes.STRING,
       allowNull: false
     }
@@ -32,13 +25,14 @@ const Accounts = sequelize.define(
     sequelize,
     timestamps: true,
     freezeTableName: true,
-    tableName: 'account'
+    tableName: 'users'
   }
 )
 
-Accounts.belongsTo(Users, {
+Users.hasOne(Accounts, {
+  sourceKey: 'id',
   foreignKey: 'userIndex',
-  sourceKey: 'id'
+  onDelete: 'CASCADE'
 })
 
-module.exports = Accounts
+module.exports = Users

@@ -1,4 +1,9 @@
 {
     "extends": "standard",
-    "root": true
+    "root": true,
+    "rules": {
+        "semi":"off",
+        "quotes":"off",
+        "comma-dangle":"off"
+    }
 }
