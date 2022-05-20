@@ -1,7 +1,7 @@
 const Users = require('../../models/user')
-const { PasswordCoder } = require('../../lib')
+
 const IdFind = async (id) => {
-  const user = await Users.findOne({ where: { userId: id } })
+  const user = await Users.findOne({ where: { id } })
   if (user) {
     return true
   } else {
@@ -11,10 +11,9 @@ const IdFind = async (id) => {
 
 const UserCreate = async (data) => {
   try {
-    const { userId, pwd } = data
-    const { password, salt } = await PasswordCoder(pwd)
+    const { id, password, salt } = data
     await Users.create({
-      userId,
+      id,
       password,
       salt
     })

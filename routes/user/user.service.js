@@ -1,6 +1,7 @@
+const httpError = require('http-errors')
 const { IdFind, UserCreate } = require('./user.resistor')
 const { Send } = require('../../lib')
-const httpError = require('http-errors')
+const { Password, CreateSalt } = require('../../lib')
 
 const CheckUserId = async (req, res, next) => {
   try {
@@ -21,7 +22,9 @@ const CreateUser = async (req, res, next) => {
     const { id, pwd } = req.body
     const userCheck = await IdFind(id)
     if (!userCheck) {
-      const result = await UserCreate({ id, pwd })
+      const salt = CreateSalt()
+      const { password } = Password({ pwd, salt })
+      const result = await UserCreate({ id, password, salt })
       if (result) {
         return Send(res, true)
       } else {
