@@ -7,9 +7,9 @@ const cors = require('cors')
 // const jwt = require("jsonwebtoken");
 
 const { Error } = require('./lib/lib')
-// const userRouter = require('./routes/user')
+const userRouter = require('./routes/user/user.route')
 // const accountRouter = require('./routes/account')
-const { sequelize } = require('./models/index.js')
+const { sequelize } = require('./models/index')
 
 if (process.env.NODE_ENV === 'local') {
   sequelize
@@ -38,7 +38,7 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
-// app.use('/user', userRouter)
+app.use('/user', userRouter)
 // app.use('/account', accountRouter)
 
 app.use(Error)
