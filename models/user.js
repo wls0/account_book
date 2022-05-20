@@ -2,7 +2,7 @@ const { sequelize, DataTypes } = require('./index')
 const { Accounts } = require('./accountlist')
 
 const Users = sequelize.define(
-  'users',
+  'user',
   {
     id: {
       type: DataTypes.INTEGER,

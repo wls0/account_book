@@ -20,8 +20,8 @@ const sequelize = new Sequelize(
     username: name,
     password,
     database: DB,
-    host: 'localhost',
-    dialect: 'mysql'
+    host: config.host,
+    dialect: config.dialect
   }
 )
 

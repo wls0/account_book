@@ -32,7 +32,7 @@ const Accounts = sequelize.define(
     sequelize,
     timestamps: true,
     freezeTableName: true,
-    tableName: 'account'
+    tableName: 'accounts'
   }
 )
 
@@ -41,4 +41,4 @@ Accounts.belongsTo(Users, {
   sourceKey: 'id'
 })
 
-module.exports = Accounts
+module.exports = { Accounts }
