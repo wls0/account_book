@@ -1,7 +1,7 @@
 const httpError = require('http-errors')
 const { IdFind, UserCreate } = require('./user.resistor')
-const { Send } = require('../../lib')
-const { Password, CreateSalt } = require('../../lib')
+const { Send } = require('../../lib/lib')
+const { Password, CreateSalt } = require('../../lib/lib')
 
 const CheckUserId = async (req, res, next) => {
   try {
