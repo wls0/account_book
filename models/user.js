@@ -1,15 +1,18 @@
 const { sequelize, DataTypes } = require('./index')
-const { Accounts } = require('./accountlist')
+const Accounts = require('./accountlist')
 
 const Users = sequelize.define(
   'user',
   {
     index: {
       type: DataTypes.INTEGER,
-      allowNull: false
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true
     },
     id: {
       type: DataTypes.STRING,
+      unique: true,
       allowNull: false
     },
     password: {

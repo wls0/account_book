@@ -1,9 +1,14 @@
 const { sequelize, DataTypes } = require('./index')
-const { Users } = require('./user')
 
 const Accounts = sequelize.define(
   'account',
   {
+    index: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      autoIncrement: true,
+      primaryKey: true
+    },
     userIndex: {
       type: DataTypes.INTEGER,
       allowNull: false
@@ -36,9 +41,4 @@ const Accounts = sequelize.define(
   }
 )
 
-Accounts.belongsTo(Users, {
-  foreignKey: 'userIndex',
-  sourceKey: 'id'
-})
-
-module.exports = { Accounts }
+module.exports = Accounts
