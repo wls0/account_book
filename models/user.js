@@ -4,11 +4,11 @@ const { Accounts } = require('./accountlist')
 const Users = sequelize.define(
   'user',
   {
-    id: {
+    index: {
       type: DataTypes.INTEGER,
       allowNull: false
     },
-    userId: {
+    id: {
       type: DataTypes.STRING,
       allowNull: false
     },
@@ -30,7 +30,7 @@ const Users = sequelize.define(
 )
 
 Users.hasOne(Accounts, {
-  sourceKey: 'id',
+  sourceKey: 'index',
   foreignKey: 'userIndex',
   onDelete: 'CASCADE'
 })
