@@ -21,7 +21,8 @@ const sequelize = new Sequelize(
     password,
     database: DB,
     host: config.host,
-    dialect: config.dialect
+    dialect: config.dialect,
+    timezone: '+09:00'
   }
 )
 
