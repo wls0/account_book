@@ -40,7 +40,7 @@ const JwtPassport = passport.use(
     },
     async (payload, done) => {
       try {
-        const index = payload.user.index
+        const index = payload.check
         const user = await Users.findOne({ where: { index } })
         if (user) {
           return done(null, user.index)
