@@ -23,10 +23,10 @@ const CreateUser = async (req, res, next) => {
     const userCheck = await IdFind(id)
     if (!userCheck) {
       const salt = CreateSalt()
-      const { password } = Password({ pwd, salt })
+      const password = Password({ pwd, salt })
       const result = await UserCreate({ id, password, salt })
       if (result) {
-        return Send(res, true)
+        return Send(res, '')
       } else {
         throw httpError(500)
       }
