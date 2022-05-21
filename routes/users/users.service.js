@@ -1,5 +1,5 @@
 const httpError = require('http-errors')
-const { IdFind, UserCreate } = require('./user.resistor')
+const { IdFind, UserCreate } = require('./users.resistor')
 const { Send } = require('../../lib/lib')
 const { Password, CreateSalt } = require('../../lib/lib')
 

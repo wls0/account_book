@@ -4,10 +4,10 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const compression = require('compression')
 const cors = require('cors')
-// const jwt = require("jsonwebtoken");
 
 const { Error } = require('./lib/lib')
-const userRouter = require('./routes/user/user.route')
+const userRouter = require('./routes/users/users.route')
+const loginRouter = require('./routes/login/login.route')
 // const accountRouter = require('./routes/account')
 const { sequelize } = require('./models/index')
 
@@ -39,6 +39,7 @@ app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 
 app.use('/user', userRouter)
+app.use('/login', loginRouter)
 // app.use('/account', accountRouter)
 
 app.use(Error)
