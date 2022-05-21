@@ -8,8 +8,9 @@ const cors = require('cors')
 const { Error } = require('./lib/lib')
 const userRouter = require('./routes/users/users.route')
 const loginRouter = require('./routes/login/login.route')
-// const accountRouter = require('./routes/account')
+const accountRouter = require('./routes/accounts/accounts.route')
 const { sequelize } = require('./models/index')
+const { JwtPassport } = require('./routes/login/passport')
 
 if (process.env.NODE_ENV === 'local') {
   sequelize
@@ -40,7 +41,14 @@ app.use(cookieParser())
 
 app.use('/user', userRouter)
 app.use('/login', loginRouter)
-// app.use('/account', accountRouter)
+app.use(
+  '/accounts',
+  JwtPassport.authenticate('jwt', {
+    session: false,
+    failureRedirect: '/login/token-fail'
+  }),
+  accountRouter
+)
 
 app.use(Error)
 
