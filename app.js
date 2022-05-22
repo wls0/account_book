@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser')
 const logger = require('morgan')
 const compression = require('compression')
 const cors = require('cors')
+const httpError = require('http-errors')
 
 const { Error } = require('./lib/lib')
 const userRouter = require('./routes/users/users.route')
@@ -49,6 +50,10 @@ app.use(
   }),
   accountRouter
 )
+
+app.use(() => {
+  throw httpError(404)
+})
 
 app.use(Error)
 
