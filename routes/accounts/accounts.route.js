@@ -57,10 +57,10 @@ router.delete('/:index', [Index, Validator], DeleteAccount)
 router.get('/day/:date', [DateParam, Validator], DayAccountFind)
 
 // 월 별 가계부 확인
-router.get('/month/:month', [Month, Validator], DayAccountFind)
+router.get('/month/:date', [Month, Validator], DayAccountFind)
 
 // 년 별 가계부 확인
-router.get('/year/:year', [Year, Validator], DayAccountFind)
+router.get('/year/:date', [Year, Validator], DayAccountFind)
 
 // 해당 날짜 카드별 상세 확인
 router.get(
