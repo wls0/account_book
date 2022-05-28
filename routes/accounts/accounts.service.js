@@ -14,7 +14,7 @@ const {
   KbCost,
   RevenueCost,
   UseCardList
-} = require('./accounts.resistor')
+} = require('./accounts.repository')
 
 // 가계부 생성
 const CreateAccount = async (req, res, next) => {
